@@ -3,6 +3,11 @@ from llama_index.llms.ollama import Ollama
 from llama_parse import LlamaParse
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, PromptTemplate
 from llama_index.core.embeddings import resolve_embed_model
+from llama_index.core.tools import QueryEngineTool, ToolMetadata
+from llama_index.core.agent import ReActAgent
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 #instantiate our llm model
@@ -20,6 +25,15 @@ vector_index = VectorStoreIndex.from_documents(documents, embed_model=embed_mode
 #allows you to utilize vector_index as question/answer bot
 query_engine = vector_index.as_query_engine(llm=llm)
 
-#test the query engine by sending it a query
-result = query_engine.query("what are some of the routes in the api?")
-print(result)
+tools = [
+    QueryEngineTool(
+        query_engine=query_engine,
+        metadata=ToolMetadata(
+            name="api_documentation",
+            description="this give documentation about code for an API. Use this for reading docs for the API"
+        ),
+    )
+]
+
+
+agent = ReActAgent.from_tools(tools, llm=, verbose=True, context="")
